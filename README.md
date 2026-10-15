@@ -134,7 +134,7 @@ ZIP에는 `manifest.json`, `color.png`, `outline.png`만 들어가며 비밀값�
 manifest 1.22의 commandLists에 단일·복수 추첨 예시 두 개를 선언했습니다.
 실제 제안 UI의 위치와 표시 형태는 Teams 클라이언트에서 확인해야 합니다.
 
-아이콘은 루트의 원본 PNG를 보존하고 내장 ImageGen으로 두 형태를 생성했습니다.
+제공된 원본 PNG를 참고해 내장 ImageGen으로 아이콘 두 형태를 생성했습니다. 사용이 끝난 루트 원본은 2026-10-15 사용자 요청으로 삭제했습니다.
 `appPackage/color.png`는 192×192 컬러, `appPackage/outline.png`는 32×32 투명 배경의 흰색 단색입니다.
 생성 후 규격 크기로 내보내고 외곽선 아이콘 RGB를 순백색으로 정규화했으며 알파 채널은 보존했습니다.
 

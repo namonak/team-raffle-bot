@@ -66,7 +66,7 @@
 **Files:** `appPackage/*`, `scripts/package-teams-app.sh`, `test/package-teams-app.test.ts`, `Dockerfile`, `compose.yaml`, `.env.example`, `deploy/team-raffle-bot.service`, `README.md`.
 
 - [x] ZIP 구성·ID 치환·아이콘 규격 테스트 작성 후 실패 확인.
-- [x] ImageGen으로 원본 특징을 살린 컬러·단색 아이콘 제작, 원본 보존.
+- [x] ImageGen으로 원본 특징을 살린 컬러·단색 아이콘 제작. 원본은 초기 보존 후 2026-10-15 사용자 요청으로 삭제.
 - [x] manifest 1.22 명령 제안·별도 도메인, 기존 패키지·Docker 구조 적용.
 - [x] README에 입력·운영·테스트·게시 확인 복구·백업·남은 실환경 검증 설명.
 - [x] 전체 테스트·typecheck·build·가능한 Docker 확인. 독립 최종 코드 검토 후 중요한 문제 수정·회귀 확인.
