@@ -1,4 +1,4 @@
-import { draw, validateForm, RaffleError, type RaffleConfig } from './domain.js';
+import { draw, validateForm, RaffleError, RAFFLE_FINAL_STAGE, RAFFLE_STAGE_INTERVAL_MS, type RaffleConfig } from './domain.js';
 import { Store, type Draft, type Raffle } from './store.js';
 import { buildCreateCard, buildRaffleCard, type Card } from './cards.js';
 export type Actor = {
@@ -101,7 +101,7 @@ export class RaffleService {
             r.messageId = id;
             r.status = 'running';
             r.stage = 1;
-            r.nextAt = this.now() + 1750;
+            r.nextAt = this.now() + RAFFLE_STAGE_INTERVAL_MS;
             this.store.saveRaffle(r);
             return r;
         }
@@ -121,20 +121,21 @@ export class RaffleService {
                 if (pending.nextAt > this.now())
                     continue;
                 const r = this.store.getRaffle(pending.id)!;
+                if (r.status === 'retry') r.stage = RAFFLE_FINAL_STAGE;
                 try {
                     await this.transport.update(r.conversationId, r.messageId!, buildRaffleCard(r, r.stage));
-                    if (r.stage === 4) {
+                    if (r.stage === RAFFLE_FINAL_STAGE) {
                         r.status = 'done';
                     }
                     else {
                         r.stage++;
-                        r.nextAt = this.now() + 1750;
+                        r.nextAt = this.now() + RAFFLE_STAGE_INTERVAL_MS;
                     }
                     this.store.saveRaffle(r);
                 }
                 catch (error) {
                     const { status, retry } = failure(error);
-                    r.stage = 4;
+                    r.stage = RAFFLE_FINAL_STAGE;
                     r.failures++;
                     r.status = permanent(status) ? 'attention' : 'retry';
                     const retryMs = retry ? (/^\d+(?:\.\d+)?$/.test(retry) ? Number(retry) * 1000 : Math.max(0, Date.parse(retry) - this.now())) : 0;

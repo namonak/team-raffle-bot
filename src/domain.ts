@@ -1,4 +1,6 @@
 import { randomInt } from 'node:crypto';
+export const RAFFLE_FINAL_STAGE = 6;
+export const RAFFLE_STAGE_INTERVAL_MS = 2_000;
 export class RaffleError extends Error {
 }
 export type RaffleConfig = {

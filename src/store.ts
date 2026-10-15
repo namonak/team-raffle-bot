@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import type { RaffleConfig } from './domain.js';
+import { RAFFLE_FINAL_STAGE, type RaffleConfig } from './domain.js';
 export type Draft = {
     id: string;
     key: string;
@@ -74,7 +74,7 @@ export class Store {
             for (const row of this.db.prepare("SELECT data FROM raffle WHERE status IN ('running','publishing')").all()) {
                 const r: Raffle = JSON.parse(String(row.data));
                 r.status = r.messageId ? 'retry' : 'uncertain';
-                r.stage = 4;
+                r.stage = RAFFLE_FINAL_STAGE;
                 r.nextAt = now;
                 this.saveRaffle(r);
             }

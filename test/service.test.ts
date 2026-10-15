@@ -16,7 +16,7 @@ test('입력 카드는 같은 메시지에서만 추첨하며 중복 클릭은 �
  const raffle=await s.service.startForm(actor,draft.id,input);
  assert.equal(s.sent.length,1);assert.equal(s.updates.length,0);
  assert.deepEqual((await s.service.startForm(actor,draft.id,{...input,count:'2'})).winners,raffle.winners);
- for(let i=0;i<5;i++){await s.service.runScheduledTasks();s.tick();}
+ for(let i=0;i<7;i++){await s.service.runScheduledTasks();s.tick();}
  assert.equal(s.sent.length,1);assert.ok(s.updates.length>=4);
  assert.ok(s.updates.every(v=>v.id===draft.messageId));
  assert.equal(s.store.getRaffle(raffle.id)?.status,'done');s.store.close();
@@ -39,7 +39,7 @@ test('갱신 실패는 결과를 재추첨하지 않고 최종 결과만 재시�
  const s=setup();const d=await s.service.createDraft(actor,'r');const r=await s.service.startForm(actor,d.id,input);
  s.transport.update=async()=>{throw {statusCode:429,headers:{'retry-after':'10'}};};
  await s.service.runScheduledTasks();const failed=s.store.getRaffle(r.id)!;
- assert.equal(failed.stage,4);assert.ok(failed.nextAt>=11_000);
+ assert.equal(failed.stage,6);assert.ok(failed.nextAt>=11_000);
  s.tick(2_000);let calls=0;s.transport.update=async()=>{calls++;};await s.service.runScheduledTasks();assert.equal(calls,0);
  s.tick(10_000);await s.service.runScheduledTasks();assert.equal(calls,1);assert.deepEqual(s.store.getRaffle(r.id)?.winners,r.winners);assert.equal(s.store.getRaffle(r.id)?.status,'done');s.store.close();
 });
@@ -59,4 +59,21 @@ test('다른 입력 카드나 원본 메시지 ID 없는 요청으로 판을 바
  const s=setup();const a=await s.service.createDraft(actor,'a');const b=await s.service.createDraft(actor,'b');
  await assert.rejects(s.service.startForm({...actor,messageId:a.messageId!},b.id,input));
  await assert.rejects(s.service.startForm({...actor,messageId:undefined},a.id,input));s.store.close();
+});
+test('텍스트와 입력 카드 모두 12초 동안 같은 카드에서 중계한 뒤 결과를 공개한다',async()=>{
+ for(const mode of ['form','text']){
+  const s=setup();let raffle;
+  if(mode==='form'){const d=await s.service.createDraft(actor,'duration');raffle=await s.service.startForm(actor,d.id,input);await s.service.runScheduledTasks();}
+  else raffle=await s.service.startText(actor,'duration',{title:'판',candidates:['A','B','C'],count:1});
+  for(let i=0;i<5;i++){s.tick(2_000);await s.service.runScheduledTasks();assert.equal(s.store.getRaffle(raffle.id)?.status,'running');}
+  s.tick(1_999);await s.service.runScheduledTasks();assert.equal(s.store.getRaffle(raffle.id)?.status,'running');
+  s.tick(1);await s.service.runScheduledTasks();assert.equal(s.store.getRaffle(raffle.id)?.status,'done');
+  assert.equal(s.sent.length,1);assert.ok(s.updates.every(v=>v.id===raffle.messageId));s.store.close();
+ }
+});
+test('이전 버전의 결과 재시도 stage 4는 중계 없이 확정 결과를 표시한다',async()=>{
+ const s=setup();const d=await s.service.createDraft(actor,'legacy');const r=await s.service.startForm(actor,d.id,input);
+ r.stage=4;r.status='retry';s.store.saveRaffle(r);
+ await s.service.runScheduledTasks();assert.equal(s.store.getRaffle(r.id)?.status,'done');
+ assert.match(JSON.stringify(s.updates[0].card),/당첨자는 바로 너다/);assert.deepEqual(s.store.getRaffle(r.id)?.winners,r.winners);s.store.close();
 });

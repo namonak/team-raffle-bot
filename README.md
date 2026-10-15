@@ -35,8 +35,9 @@ Teams에서 이름을 입력한 뒤 실제 봇 멘션을 선택해 전송합니�
 
 - Node 표준 `crypto.randomInt`로 모든 후보에 같은 확률을 부여해 중복 없이 추첨합니다.
 - 결과는 시작 시 한 번 확정·저장합니다. 중계 문구가 당첨 확률을 바꾸지 않습니다.
-- 정상 상태에서는 약 1.75초 간격으로 짧은 중계를 갱신하고 약 7~8초 뒤 결과를 남깁니다.
-- 카드에는 텍스트만 표시합니다. 복수 당첨자의 표시 순서는 순위가 아닙니다.
+- 정상 상태에서는 약 2초 간격으로 6개 중계 장면을 갱신하고 약 12초 뒤 결과를 남깁니다.
+- 카드에는 텍스트만 표시합니다. 제목·중계·당첨자는 글씨 크기·색상과 이모지로 구분합니다. 복수 당첨자의 표시 순서는 순위가 아닙니다.
+- 하단의 `🔥 팔자 뒤섞는 중…` 게이지는 불규칙한 폭으로 차오르고 결과 공개 시 꽉 찹니다. 실제 확률이나 처리량을 나타내지 않습니다.
 - 같은 방은 한 판씩 진행하고 다른 대화방의 판은 독립적으로 처리합니다.
 - 같은 요청 재전달·버튼 이중 클릭은 새 추첨을 만들지 않습니다.
 - 중계 갱신이 실패하면 연출을 생략하고 최종 결과를 우선 반영합니다.
@@ -172,7 +173,7 @@ if(!['draft','raffle'].includes(kind)||!id||!messageId)throw new Error('종류�
 const db=new DatabaseSync(process.env.DATABASE_PATH);
 const status=kind==='draft'?'ready':'retry';
 const result=db.prepare(`UPDATE ${kind} SET status=?, data=json_set(data,
-  '$.status', ?, '$.messageId', ?, '$.stage', 4, '$.nextAt', 0)
+  '$.status', ?, '$.messageId', ?, '$.stage', 6, '$.nextAt', 0)
   WHERE id=? AND status IN ('uncertain','attention')`).run(status,status,messageId,id);
 if(result.changes!==1)throw new Error('복구할 작업이 없거나 상태가 다릅니다');
 db.close();
@@ -229,3 +230,15 @@ docker compose start bot
 - 간접 의존성 proxy-addr를 2.0.8로 갱신해 `npm audit` 경고 0건 확인.
 - Compose 설정 검사 통과. Docker 데몬이 없어 이미지 빌드·실행은 미검증.
 - 실제 Teams 설치·명령 제안·중계 렌더링·입력값 유지는 위 확인 목록에 따라 별도 검증 필요.
+
+
+### 카드 연출 개선 (2026-10-15)
+
+- 중계를 6개 장면·약 12초로 늘리고 역전 문구·이모지·글씨 강조와 하단 게이지 추가.
+- 시간 제어·게이지 증가·이전 버전 결과 재시도까지 포함해 자동 테스트 26개 통과.
+- 서버 코드만 바뀌었으므로 NAS에서 아래 명령으로 반영. Teams 앱 ZIP 재설치는 필요하지 않음.
+
+```bash
+git pull --ff-only origin main
+docker compose up -d --build
+```
