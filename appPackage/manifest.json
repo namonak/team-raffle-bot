@@ -1,0 +1,33 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.22/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.22",
+  "version": "1.0.0",
+  "id": "{{MICROSOFT_APP_ID}}",
+  "developer": {
+    "name": "Joannes",
+    "websiteUrl": "https://namonak.dev",
+    "privacyUrl": "https://namonak.dev/privacy",
+    "termsOfUseUrl": "https://namonak.dev/terms"
+  },
+  "name": { "short": "쿠웨이트박", "full": "팀 뽑기 도우미 쿠웨이트박" },
+  "icons": { "color": "color.png", "outline": "outline.png" },
+  "accentColor": "#EAB308",
+  "description": {
+    "short": "자, 판 돌린다. 후보와 개수만 올려봐. 쿠웨이트박이 뽑아준다.",
+    "full": "@쿠웨이트박을 부르면 뽑기 제목, 한 줄에 하나씩 후보, 추첨 개수를 적는 판이 열린다. 좋아, 판 돌려!를 누르면 같은 카드에서 중계와 결과를 보여준다. 후보를 공백으로 나열해 바로 뽑을 수도 있다. 마지막에 숫자 또는 2명·2개·2곳처럼 뽑을 수를 붙이면 된다."
+  },
+  "bots": [{
+    "botId": "{{MICROSOFT_APP_ID}}",
+    "scopes": ["groupChat"],
+    "supportsFiles": false,
+    "isNotificationOnly": false,
+    "commandLists": [{
+      "scopes": ["groupChat"],
+      "commands": [
+        {"title": "홍길동 김철수 이영희", "description": "후보를 띄어 적어. 내가 하나 뽑아주지."},
+        {"title": "홍길동 김철수 이영희 2명", "description": "마지막에 몇 명 뽑을지만 붙여."}
+      ]
+    }]
+  }],
+  "validDomains": ["raffle-bot.namonak.dev"]
+}

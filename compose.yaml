@@ -1,0 +1,16 @@
+services:
+  bot:
+    container_name: team-raffle-bot
+    build: .
+    image: team-raffle-bot:local
+    env_file: .env
+    environment:
+      PORT: 3978
+      DATABASE_PATH: /data/team-raffle-bot.sqlite
+    ports:
+      - "127.0.0.1:3980:3978"
+    volumes:
+      - raffle-data:/data
+    restart: unless-stopped
+volumes:
+  raffle-data:
